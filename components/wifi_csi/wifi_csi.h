@@ -40,7 +40,7 @@ namespace esphome
             void set_timing(int pollingInterval);
             void set_sensitivity(float sensitivity);
             void set_buffer_size(int bufferSize);
-            void set_expose_rssi(bool exposeRssi)
+            void set_expose_rssi(bool exposeRssi);
 
             void update() override;
 
