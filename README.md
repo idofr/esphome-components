@@ -116,7 +116,9 @@ good (ie. you have to be quite close to detect a motion). More tests are require
 external_components:
   source: github://JanPeter1/esphome-components
   components: [ wifi_csi ]
-  
+
+# binary_sensor needed to include the intended ESPHome header
+binary_sensor:
 wifi_csi:
   id: csi_motion
   name: Motion detected

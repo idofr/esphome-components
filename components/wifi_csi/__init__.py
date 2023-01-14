@@ -14,6 +14,7 @@ from esphome.const import (
     CONF_TIMING,
     CONF_HYSTERESIS,
     CONF_BUFFER_SIZE,
+    CONF_EXPOSE_RSSI,
 )
 
 CODEOWNERS = ["@JanPeter1"]
@@ -27,12 +28,16 @@ CsiSensor = wifi_csi_ns.class_(
 CONFIG_SCHEMA = (
     binary_sensor.binary_sensor_schema(CsiSensor)
     .extend(cv.COMPONENT_SCHEMA)
-    .extend({
-        cv.Optional(CONF_TIMING): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_HYSTERESIS): cv.float_,
-        cv.Optional(CONF_BUFFER_SIZE): cv.int_,
-    })
+    .extend(
+        {
+            cv.Optional(CONF_TIMING): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_HYSTERESIS): cv.float_,
+            cv.Optional(CONF_BUFFER_SIZE): cv.int_,
+            cv.Optional(CONF_EXPOSE_RSSI): cv.boolean,
+        }
+    )
 )
+
 
 async def to_code(config):
     var = await binary_sensor.new_binary_sensor(config)
@@ -42,4 +47,6 @@ async def to_code(config):
         cg.add(var.set_sensitivity(config[CONF_HYSTERESIS]))
     if CONF_BUFFER_SIZE in config:
         cg.add(var.set_buffer_size(config[CONF_BUFFER_SIZE]))
+    if CONF_EXPOSE_RSSI in config:
+        cg.add(var.set_expose_rssi(config[CONF_EXPOSE_RSSI]))
     await cg.register_component(var, config)
