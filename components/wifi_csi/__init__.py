@@ -13,9 +13,9 @@ from esphome.components import binary_sensor
 from esphome.const import (
     CONF_TIMING,
     CONF_HYSTERESIS,
-    CONF_BUFFER_SIZE,
-    CONF_EXPOSE_RSSI,
+    CONF_BUFFER_SIZE
 )
+CONF_EXPOSE_RSSI = 'expose_rssi'
 
 CODEOWNERS = ["@JanPeter1"]
 wifi_csi_ns = cg.esphome_ns.namespace("wifi_csi")
