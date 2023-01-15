@@ -12,14 +12,14 @@
 static const char *const TAG = "wifi_csi";
 extern esphome::wifi::WiFiComponent *esphome::wifi::global_wifi_component; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-esphome::wifi_csi::CsiSensor::CsiSensor()
+esphome::wifi_csi::WiFiCSIComponent::WiFiCSIComponent()
     : PollingComponent(), binary_sensor::BinarySensor(), m_pollingInterval(100), m_bufferSize(100), m_sensitivity(2), m_rssi(nullptr)
 {
     set_update_interval(m_pollingInterval);
     this->set_device_class("motion");
 }
 
-esphome::wifi_csi::CsiSensor::~CsiSensor()
+esphome::wifi_csi::WiFiCSIComponent::~WiFiCSIComponent()
 {
     if (m_rssi)
     {
@@ -28,12 +28,12 @@ esphome::wifi_csi::CsiSensor::~CsiSensor()
     }
 }
 
-float esphome::wifi_csi::CsiSensor::get_setup_priority() const
+float esphome::wifi_csi::WiFiCSIComponent::get_setup_priority() const
 {
     return esphome::setup_priority::AFTER_WIFI;
 }
 
-void esphome::wifi_csi::CsiSensor::dump_config()
+void esphome::wifi_csi::WiFiCSIComponent::dump_config()
 {
     ESP_LOGCONFIG(TAG, "Wifi CSI:");
     ESP_LOGCONFIG(TAG, "polling interval: %dms", m_pollingInterval);
@@ -42,18 +42,18 @@ void esphome::wifi_csi::CsiSensor::dump_config()
     ESP_LOGCONFIG(TAG, "expose_rssi: %d", m_expose_rssi);
 }
 
-void esphome::wifi_csi::CsiSensor::set_timing(int pollingInterval)
+void esphome::wifi_csi::WiFiCSIComponent::set_timing(int pollingInterval)
 {
     m_pollingInterval = pollingInterval;
     set_update_interval(pollingInterval);
 }
 
-void esphome::wifi_csi::CsiSensor::set_sensitivity(float sensitivity)
+void esphome::wifi_csi::WiFiCSIComponent::set_sensitivity(float sensitivity)
 {
     m_sensitivity = sensitivity;
 }
 
-void esphome::wifi_csi::CsiSensor::set_buffer_size(int bufferSize)
+void esphome::wifi_csi::WiFiCSIComponent::set_buffer_size(int bufferSize)
 {
     m_bufferSize = bufferSize;
     if (m_rssi)
@@ -63,12 +63,7 @@ void esphome::wifi_csi::CsiSensor::set_buffer_size(int bufferSize)
     m_rssi = reinterpret_cast<int *>(malloc(m_bufferSize * sizeof(int)));
 }
 
-void esphome::wifi_csi::CsiSensor::set_expose_rssi(bool exposeRssi)
-{
-    m_expose_rssi = exposeRssi;
-}
-
-void esphome::wifi_csi::CsiSensor::update()
+void esphome::wifi_csi::WiFiCSIComponent::update()
 {
     static int idx = 0;     // pointer inside rssi
     static int cnt = 0;     // number of values inside rssi
@@ -96,7 +91,15 @@ void esphome::wifi_csi::CsiSensor::update()
         float avgerageRssi = sum / cnt;
         float dev = abs(currentRssi - avgerageRssi);
         bool motion = (dev >= m_sensitivity);
-        publish_state(motion);
+
+        if (this->motion_sensor_ != nullptr)
+        {
+            this->motion_sensor_->publish_state(motion);
+        }
+        if (this->rssi_sensor_ != nullptr)
+        {
+            this->rssi_sensor_->publish_state(currentRssi);
+        }
 
         // log every 5 seconds
         static time_t last_t;
@@ -104,7 +107,16 @@ void esphome::wifi_csi::CsiSensor::update()
         time(&now_t);
         if (difftime(now_t, last_t) > 5.0)
         {
-            ESP_LOGD(TAG, "idx: %d, cnt: %d: avg: %.1f, current: %d, sensitvity: %d, motion: %d", idx, cnt, avgerageRssi, currentRssi, m_sensitivity, motion);
+            if (this->rssi_sensor_ != nullptr)
+            {
+                this->rssi_sensor_->publish_state(currentRssi);
+                ESP_LOGD(TAG, "idx: %d, cnt: %d: avg: %.1f, current: %d, sensitvity: %d, motion: %d", idx, cnt, avgerageRssi, currentRssi, m_sensitivity, motion);
+            }
+            else
+            {
+                ESP_LOGD(TAG, "idx: %d, cnt: %d: avg: %.1f, sensitvity: %d, motion: %d", idx, cnt, avgerageRssi, m_sensitivity, motion);
+            }
+
             last_t = now_t;
         }
     }
@@ -112,4 +124,6 @@ void esphome::wifi_csi::CsiSensor::update()
     {
         set_buffer_size(m_bufferSize); // create the rssi buffer
     }
+
+    this->status_clear_warning();
 }

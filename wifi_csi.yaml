@@ -22,15 +22,23 @@ wifi:
 
 # https://github.com/JanPeter1/esphome-components
 external_components:
-  source: github://idofr/esphome-components
+  # source: github://idofr/esphome-components
+  source:
+    type: local
+    path: "/workspaces/esphome-components/components"
   components: [ wifi_csi ]
   refresh: "0s"
 
 binary_sensor:
 wifi_csi:
-  id: csi_motion
-  name: "StudyLampMotionDetected"
-  expose_rssi: True
+  expose_binary_motion_sensor:
+    name: "TestNodeRSSIBinaryMotion"
+    timing: "100ms"
+    buffer_size: 100
+    hysteresis: 2
+  expose_rssi:
+    name: "TestNodeRSSIValue"
+    accuracy_decimals: 0
 
 captive_portal:
 
