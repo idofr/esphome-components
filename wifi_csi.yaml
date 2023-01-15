@@ -1,0 +1,52 @@
+esphome:
+  name: "wifi-csi-test"
+  platform: ESP32
+  board: esp-wrover-kit
+  
+  # a workaround for the latest bug in the neopixel lib bug
+  platformio_options:
+    lib_deps: 
+      - NeoPixelBus # @2.6.0
+      - AsyncTCP
+      # - ESPAsyncWebServer-esphome
+
+wifi:
+  ssid: "Vodafone-B8D4"
+  password: "mdRQTQmDdRNFGBeM"
+  fast_connect: true
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Study Lamp Fallback Hotspot"
+    password: "R7wHgY8cUf78"
+
+# https://github.com/JanPeter1/esphome-components
+external_components:
+  source: github://idofr/esphome-components
+  components: [ wifi_csi ]
+  refresh: "0s"
+
+binary_sensor:
+wifi_csi:
+  id: csi_motion
+  name: "StudyLampMotionDetected"
+  expose_rssi: True
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "186235"
+
+ota:
+  password: "186235"
+  safe_mode: True
+        
+sensor:
+  - platform: wifi_signal
+    name: "CSI WiFi Signal"
+    update_interval: 60s
+

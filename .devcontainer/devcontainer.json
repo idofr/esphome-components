@@ -1,0 +1,15 @@
+{
+    "name": "esphome",
+    "image": "docker.io/esphome/esphome:latest",
+    "mounts": [
+        "source=/etc/localtime,target=/etc/localtime,type=bind,consistency=cached,readonly"
+    ],
+    "remoteEnv": {
+        "ESPHOME_DASHBOARD_USE_PING": true
+    },
+    "forwardPorts": [
+        6052,
+        6053,
+        3232
+    ]
+}
